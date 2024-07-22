@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template to create a standard SQS queue
+
+Parameters:
+ StandardQueueName:
+    Type: String
+    Description: Name for the standard SQS queue
+    Default: FaceAnalysisQueue
+
+Resources:
+ MyStandardQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref FaceAnalysisQueueName
+
+Outputs:
+ StandardQueueURL:
+    Description: URL of the created standard SQS queue
+    Value: !Ref FaceAnalysisQueue
+ StandardQueueArn:
+    Description: ARN of the created standard SQS queue
+    Value: !GetAtt FaceAnalysisQueue.Arn

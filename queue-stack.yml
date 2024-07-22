@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A simple SQS Queue example
+
+Resources:
+  MySQSQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: !Sub '${AWS::StackName}-queue'
+      VisibilityTimeout: 90
+      MessageRetentionPeriod: 86400
+      DelaySeconds: 10
+
+  SQSPolicy:
+    Type: 'AWS::SQS::QueuePolicy'
+    Properties:
+      Queues:
+        - Ref: MySQSQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 'sqs:SendMessage'
+              - 'sqs:ReceiveMessage'
+              - 'sqs:DeleteMessage'
+            Resource: !GetAtt MySQSQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: '*'
+
+Outputs:
+  QueueURL:
+    Description: The URL of the created SQS Queue
+    Value: !GetAtt MySQSQueue.QueueUrl
