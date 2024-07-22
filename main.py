@@ -4,7 +4,8 @@ import json
 
 @mock_aws
 def create_lambda_execution_role():
-    iam = boto3.client("iam", region_name="eu-west-1")
+    # oops this may have accidentally been eu-west-1 when further down it was us-east-1
+    iam = boto3.client("iam", region_name="us-east-1")
     
     # Combine the trust relationship and the permissions policy into a single document
     combined_policy = {
