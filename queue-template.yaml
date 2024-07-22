@@ -1,22 +1,18 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: Template to create a standard SQS queue
-
-Parameters:
- StandardQueueName:
-    Type: String
-    Description: Name for the standard SQS queue
-    Default: FaceAnalysisQueue
-
 Resources:
- MyStandardQueue:
+  Queue:
     Type: AWS::SQS::Queue
+  FaceAnalysisDB:
+    Type: AWS::DynamoDB::Table
     Properties:
-      QueueName: !Ref FaceAnalysisQueueName
-
-Outputs:
- StandardQueueURL:
-    Description: URL of the created standard SQS queue
-    Value: !Ref FaceAnalysisQueue
- StandardQueueArn:
-    Description: ARN of the created standard SQS queue
-    Value: !GetAtt FaceAnalysisQueue.Arn
+      AttributeDefinitions:
+        - AttributeName: ImageName
+          AttributeType: S
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      KeySchema:
+        - AttributeName: ImageName
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: KEYS_ONLY

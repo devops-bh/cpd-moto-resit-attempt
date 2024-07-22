@@ -32,3 +32,7 @@ response = cloud_formation_client.create_stack(
     StackName=stack_name,
     TemplateBody=content)
 
+print(response) 
+print("\nSTACKS LISTED: \n")
+print(cloud_formation_client.list_stacks())
+
