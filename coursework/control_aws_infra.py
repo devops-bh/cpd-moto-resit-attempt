@@ -1,9 +1,12 @@
 import boto3
+import yaml
+import json
 # these constants are just temp for dev 
 LOGGING = True 
 BUCKETNAME = "mockedbucket"
 SNS_TOPIC = "mockedsnstopic" # arn:aws:sns:us-east-1:123456789012:mockedsnstopic
-
+TEMPLATEFILELOCATION = 'queue-template.yaml'
+STACKNAME = 'cloud_formation_face_analysis_queue_stack'
 
 class StaticOrchestrator:
     logging = LOGGING
@@ -32,13 +35,30 @@ class CloudformationStack:
     def __init__(self, client):
         self.client = client
 
+    def __load_yml_file_as_json(self, yml_file_location):
+        try:
+            with open(yml_file_location, 'r') as content_file:
+                content = yaml.load(content_file, Loader=yaml.FullLoader)
+            Orchestrator.log(f"attempted to load YML and convert to JSON") 
+            return json.dumps(content)
+        except Exception as exception:
+            Orchestrator.logError(f"failed to load YML and convert to JSON\n{exception}")
     def create(self):
         # sqs + dynamo
-        pass
+        try:
+            stack_as_json = self.__load_yml_file_as_json(TEMPLATEFILELOCATION)
+            response = self.client.create_stack(
+                StackName=STACKNAME,
+                TemplateBody=stack_as_json)
+            Orchestrator.log(f"stack creation attempt\n {response}")
+        except Exception as exception:
+            Orchestrator.logError(f"failed to create stack\n{exception}")
     def validate(self):
+        #print(cloud_formation_client.list_stacks()) # TODO: GET THE ACTUAL STACK 
         pass
     def destroy(self):
         pass
+
 
 # task1 
 class EC2Instances:
@@ -104,8 +124,7 @@ class S3Bucket:
 
     def create(self, sns_topic_arn):
         try:
-            #self.client.create_bucket(Bucket=BUCKETNAME)
-            s3_client = boto3.client("s3", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
+            self.client.create_bucket(Bucket=BUCKETNAME)
             self._configure_bucket_notification(sns_topic_arn)
             Orchestrator.log("Bucket with event notification configured was created")
         except Exception as exception:

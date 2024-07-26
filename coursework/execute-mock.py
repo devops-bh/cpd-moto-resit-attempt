@@ -12,6 +12,7 @@ s3_client = boto3.client("s3", region_name="us-east-1", endpoint_url="http://127
 # & iirc if/when I tried to do so I wasn't able to get it working 
 s3_resource = boto3.resource('s3', endpoint_url="http://127.0.0.1:5000")
 sns_client = boto3.client("sns", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
+cloud_formation_client = boto3.client("cloudformation", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
 
 # todo: https://docs.getmoto.org/en/latest/docs/configuration/state_transition/index.html
 
@@ -28,5 +29,12 @@ def test_s3(sns_topic_arn):
     S3BucketController.create(sns_topic_arn)
     S3BucketController.validate()
 
+@mock_aws
+def test_cloudformation_stack():
+    CloudformationStackController = CloudformationStack(cloud_formation_client)
+    CloudformationStackController.create()
+    CloudformationStackController.validate()
+
+test_cloudformation_stack()
 sns_topic_arn = test_sns_topic()
 test_s3("arn:aws:sns:us-east-1:123456789012:mockedsnstopic")
