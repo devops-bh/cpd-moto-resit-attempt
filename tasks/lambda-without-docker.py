@@ -27,10 +27,19 @@ def aws_file():
 
 lambda_client = boto3.client('lambda', region_name="us-east-1") # may need endpoint for moto server 
 def lambda_creator():
-    # todo: define policy 
+    # todo:
+    # define policy 
     # create policy 
     # create role 
     # attach policy to role 
+    iam_client = boto3.client("iam", region_name="us-east-1") # may need endpoint for moto server 
+    response = iam_client.create_role(
+        AssumeRolePolicyDocument='<Stringified-JSON>',
+        Path='/',
+        RoleName='Test-Role',
+    )
+
+    print(response)
 
     response = lambda_client.create_function(
         Code={

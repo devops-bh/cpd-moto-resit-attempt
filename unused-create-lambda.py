@@ -25,7 +25,29 @@ def create_role_and_policy():
         print(f"Created role {response['Role']['RoleName']}")
     else:
         print("Role already exists")
-    # Assuming the role already exists, otherwise create it first
+
+    policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject"
+                ],
+                "Resource": "arn:aws:s3:::images/*"
+            }
+        ]
+    }
+    # Create the policy
+    policy_response = iam_client.create_policy(
+        PolicyName='LambdaS3AccessPolicy',  # Replace with your desired policy name
+        PolicyDocument=json.dumps(policy_document),
+        Description='Allows Lambda to access S3 bucket'
+    )
+    print("Created policy:", policy_response['Policy']['Arn'])
+    # Attach the policy to the role
+
+        # Assuming the role already exists, otherwise create it first
     # Phind generated: 
     #put_role_trust_policy_response = iam_client.put_role_trust_policy(
     # AttributeError: 'IAM' object has no attribute 'put_role_trust_policy'. Did you mean: 'put_role_policy'?
@@ -48,28 +70,6 @@ def create_role_and_policy():
     )
     print("Updated trust policy for role:", put_role_policy_response)
 
-    # Initialize the IAM client
-    # Define the policy document
-    policy_document = {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "s3:GetObject"
-                ],
-                "Resource": "arn:aws:s3:::images/*"
-            }
-        ]
-    }
-    # Create the policy
-    policy_response = iam_client.create_policy(
-        PolicyName='LambdaS3AccessPolicy',  # Replace with your desired policy name
-        PolicyDocument=json.dumps(policy_document),
-        Description='Allows Lambda to access S3 bucket'
-    )
-    print("Created policy:", policy_response['Policy']['Arn'])
-    # Attach the policy to the role
     attach_response = iam_client.attach_role_policy(
         RoleName='lambda-role',
         PolicyArn=policy_response['Policy']['Arn']
