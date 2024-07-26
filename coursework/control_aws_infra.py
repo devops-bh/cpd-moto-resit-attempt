@@ -31,9 +31,13 @@ class StaticOrchestrator:
 Orchestrator = StaticOrchestrator()
 
 class CloudformationStack:
-    client = None
-    def __init__(self, client):
-        self.client = client
+    """
+    Instead of sending 1 client, multipe clients are sent: the SQS client, DynamoDB client and Cloudformation client 
+    So hypothetically I could use the strategy pattern to get the required client?
+    """
+    clients = None
+    def __init__(self, clients):
+        self.clients = clients
 
     def __load_yml_file_as_json(self, yml_file_location):
         try:
@@ -47,15 +51,21 @@ class CloudformationStack:
         # sqs + dynamo
         try:
             stack_as_json = self.__load_yml_file_as_json(TEMPLATEFILELOCATION)
-            response = self.client.create_stack(
+            response = self.clients["cloud_formation_client"].create_stack(
                 StackName=STACKNAME,
                 TemplateBody=stack_as_json)
             Orchestrator.log(f"stack creation attempt\n {response}")
         except Exception as exception:
             Orchestrator.logError(f"failed to create stack\n{exception}")
     def validate(self):
-        #print(cloud_formation_client.list_stacks()) # TODO: GET THE ACTUAL STACK 
-        pass
+        # todo: error checking & programmetically check the desired stacks exist similar to the S3 bucket code
+        Orchestrator.log(f"Stacks: \n{self.clients['cloud_formation_client'].list_stacks()}") # TODO: GET THE ACTUAL STACK 
+        # check SQS queue exists 
+        listed_queues_response = self.clients["sqs_client"].list_queues()
+        Orchestrator.log(f"Queues: \n{listed_queues_response}")
+        # check DynamoDB table exists 
+        listed_tables_response = self.clients["dynamodb_client"].list_tables()
+        Orchestrator.log(f"tables: \n{listed_tables_response}")
     def destroy(self):
         pass
 

@@ -13,6 +13,8 @@ s3_client = boto3.client("s3", region_name="us-east-1", endpoint_url="http://127
 s3_resource = boto3.resource('s3', endpoint_url="http://127.0.0.1:5000")
 sns_client = boto3.client("sns", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
 cloud_formation_client = boto3.client("cloudformation", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
+sqs_client = boto3.client("sqs", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
+dynamodb_client = boto3.client("dynamodb", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
 
 # todo: https://docs.getmoto.org/en/latest/docs/configuration/state_transition/index.html
 
@@ -31,7 +33,12 @@ def test_s3(sns_topic_arn):
 
 @mock_aws
 def test_cloudformation_stack():
-    CloudformationStackController = CloudformationStack(cloud_formation_client)
+    clients = {
+        "cloud_formation_client": cloud_formation_client,
+        "sqs_client": sqs_client,
+        "dynamodb_client": dynamodb_client
+    }
+    CloudformationStackController = CloudformationStack(clients)
     CloudformationStackController.create()
     CloudformationStackController.validate()
 
