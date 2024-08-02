@@ -83,8 +83,38 @@ with open('upload-images.py', 'rb') as file:
     # https://stackoverflow.com/questions/3730964/python-script-execute-commands-in-terminal#:~:text=A%20simple%20way%20is%20using%20the%20os%20module%3A
 
     
-    # todo: use Paramiko to scp the images to the EC2 instance's virtual machine 
-    
+    # todo: use Paramiko to scp the images to the EC2 instance
+    instance_connect_client = boto3.client("ec2-instance-connect", region_name='us-east-1', endpoint_url="http://127.0.0.1:5000")
+    instance_connect_response = instance_connect_client.send_ssh_public_key(
+        # The zone where the instance was launched
+        AvailabilityZone='us-east-1',
+        # The instance ID to publish the key to.
+        InstanceId=client.describe_instances()["Reservations"][0]["Instances"][0]["InstanceId"],
+        # This should be the user you wish to be when ssh-ing to the instance (eg, ec2-user@[instance IP])
+        InstanceOSUser='ec2-user',
+        # This should be in standard OpenSSH format (ssh-rsa [key body])
+        # I am assuming Moto will not care if its the actual public key or not 
+        SSHPublicKey='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3FlHqj2eqCdrGHuA6dRjfZXQ4HX5lXEIRHaNbxEwE5Te7xNF7StwhrDtiV7IdT5fDqbRyGw/szPj3xGkNTVoElCZ2dDFb2qYZ1WLIpZwj/UhO9l2mgfjR56UojjQut5Jvn2KZ1OcyrNO0J83kCaJCV7JoVbXY79FBMUccYNY45zmv9+1FMCfY6i2jdIhwR6+yLk8oubL8lIPyq7X+6b9S0yKCkB7Peml1DvghlybpAIUrC9vofHt6XP4V1i0bImw1IlljQS+DUmULRFSccATDscCX9ajnj7Crhm0HAZC0tBPXpFdHkPwL3yzYo546SCS9LKEwz62ymxxbL9k7h09t',
+    )
+    print("\ninstance_connect_client: \n", instance_connect_response)
+    """
+    so now that I am hypothetically connected, does this mean I can start running 
+    SSH commands between my PC & the EC2 instance? 
+    Or does this mean that I am within the EC2 instance & no longer have access to the original PC? 
+
+    So if we are within the EC2 instance 
+    Then we'd do 
+    https://stackoverflow.com/questions/11304895/how-do-i-copy-a-folder-or-file-from-remote-to-local-using-scp#:~:text=The%20OP%27s%20question%20was%20whether%20it%20is%20possible%20to%20copy%20file%20from%20remote%20to%20local%20host%20while%20ssh%27d%20to%20remote%20host.%20I%27m%20not%20sure%20why%20no%20single%20answer%20has%20correctly%20addressed%20his/her%20question
+    scp -r DEFAULTGATEWAY@windows:/path/to/foo /home/user/Desktop/ 
+    ^ I don't think this is correct 
+    If I was running Linux on my actual PC then it'd be (assuming I'm inside the EC2 instance)
+    scp -r DEFAULTGATEWAY@ubuntu:/path/to/foo /home/user/Desktop/ 
+    Actually I am overthinking this, I believe that if 2 machines have been connected via 
+    SSH recently, then SCP can be used from actual PC to Ec2 instance without needing to re-auth ? 
+    Given that virtualbox seems broken, I think I'd need to boot up a real EC2 instance 
+    to help me figure this out      
+    """ 
+
 
     # utilize the SSM service's send_command function to execute commands 
     # https://stackoverflow.com/questions/42645196/how-to-ssh-and-run-commands-in-ec2-using-boto3

@@ -76,6 +76,14 @@ class EC2Instances:
     def __init__(self, client):
         self.client = client
 
+    # will SSH into the instance & provide the image & script 
+    """
+    so if I was doing an OOP based implementation 
+    then I'd have the base interface which defines the create, validate, destroy methods 
+    then I'd maybe use the decorator design pattern to attach these additional methods? 
+    """
+    def _prepare_instance_with_files(self): pass
+    def _execute_upload_images_to_s3_script(self): pass
     def create(self):
         pass
     def validate(self):
@@ -154,3 +162,31 @@ class S3Bucket:
         pass
 
 
+class Lambda:
+    lambda_name = ""
+    def __init__(self, lambda_name):
+        self.lambda_name = lambda_name
+        pass
+    def _create_rekognition_lambda(self): 
+        pass
+    def _create_save_details_lambda(self): 
+        pass
+    
+    def create(self):
+        # also a strategy pattern I guess 
+        if self.lambda_name == "rekognition_lambda":
+            self._create_rekognition_lambda()
+        elif self.lambda_name == "save_details_lambda":
+            self._create_save_details_lambda()
+        else: 
+            Orchestrator.logError("Please provide the name of the lambda (rekognition_lambda, save_details_lambda)")
+    def validate(self): pass
+    # more so execute mock lambda 
+    # I guess (perhaps if was being more functional) I could pass the lambda function to invoke 
+    # e.g. execute_lambda_mock(lambda_handler)
+    def execute_lambda_mock(self): 
+        # ...
+        pass
+    def validate_lambda_execution_mock(self): pass
+    def invoke_lambda(self): pass
+    def validate_lambda_invocation(self): pass
