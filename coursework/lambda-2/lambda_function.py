@@ -2,7 +2,7 @@ import boto3
 import json
 import requests
 requests.post("http://127.0.0.1:5000/moto-api/reset")
-
+# git commit + push didnt seem to work, this change is just to force & redo the failed push  
 def lambda_handler(event, context):
     sqs_client = boto3.client("sqs", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
     recieved_message_sqs_queue_response = sqs_client.receive_message(QueueUrl="http://127.0.0.1:5000/123456789012/rekognition-queue")
