@@ -3,10 +3,10 @@ import yaml
 import json
 # these constants are just temp for dev 
 LOGGING = True 
-BUCKETNAME = "mockedbucket"
-SNS_TOPIC = "mockedsnstopic" # arn:aws:sns:us-east-1:123456789012:mockedsnstopic
+BUCKETNAME = "mockedbucket-s2221473"
+SNS_TOPIC = "mockedsnstopic-s2221473" # arn:aws:sns:us-east-1:123456789012:mockedsnstopic
 TEMPLATEFILELOCATION = 'queue-template.yaml'
-STACKNAME = 'cloud_formation_face_analysis_queue_stack'
+STACKNAME = 'cloud_formation_face_analysis_queue_stack_s2221473'
 
 class StaticOrchestrator:
     logging = LOGGING
@@ -82,7 +82,9 @@ class EC2Instances:
     then I'd have the base interface which defines the create, validate, destroy methods 
     then I'd maybe use the decorator design pattern to attach these additional methods? 
     """
-    def _prepare_instance_with_files(self): pass
+    def _prepare_instance_with_files(self):
+        # might just use Wget to automate this (instead of SSH & SCP + SSM.run_commands)
+        pass
     def _execute_upload_images_to_s3_script(self): pass
     def create(self):
         pass
@@ -174,9 +176,9 @@ class Lambda:
     
     def create(self):
         # also a strategy pattern I guess 
-        if self.lambda_name == "rekognition_lambda":
+        if self.lambda_name == "rekognition_lambda_s2221473":
             self._create_rekognition_lambda()
-        elif self.lambda_name == "save_details_lambda":
+        elif self.lambda_name == "save_details_lambda_s2221473":
             self._create_save_details_lambda()
         else: 
             Orchestrator.logError("Please provide the name of the lambda (rekognition_lambda, save_details_lambda)")
