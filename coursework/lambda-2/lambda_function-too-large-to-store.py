@@ -1,27 +1,26 @@
-# might as well just store each item in the Dynamo table ? 
 # create dynamodb 
 import boto3
 dynamodb_client = boto3.client("dynamodb", region_name="us-east-1", endpoint_url="http://127.0.0.1:5000")
 dynamodb_create_table_response = dynamodb_client.create_table(
     AttributeDefinitions=[
         {
-            'AttributeName': 'imagename',
+            'AttributeName': 'labels',
             'AttributeType': 'S',
-        }, 
+        },
         {
-            'AttributeName': 'detection', 
-            'AttributeType': 'S'
+            'AttributeName': 'text',
+            'AttributeType': 'S',
         }
     ],
     KeySchema=[
         {
-            'AttributeName': 'imagename',
+            'AttributeName': 'labels',
             'KeyType': 'HASH',
         }, 
         {
-            'AttributeName': 'detection', 
-            'KeyType': 'RANGE'
-        }
+            'AttributeName': 'text',
+            'KeyType': 'RANGE',
+        }, 
     ],
     ProvisionedThroughput={
         'ReadCapacityUnits': 5,
@@ -53,48 +52,77 @@ def lambda_handler(event, context):
     # extract from sqs 
     messages = recieved_message_sqs_queue_response["Messages"]
     for message in messages:
-        try: 
-            print("\nMessage: ")
-            print(f"\n{message}\n")
-            body = json.loads(message["Body"])
-            print(type(body)) # <class 'dict'>
-            # insert into DynamoDB 
-            for label in body["labels"]:
-                # save label 
-                dynamodb_client.put_item(
+        print("\nMessage: ")
+        print(f"\n{message}\n")
+        body = json.loads(message["Body"])
+        print(type(body)) # <class 'dict'>
+        # insert into DynamoDB 
+        # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html#:~:text=in%20DynamoDB.-,Map,-A%20map%20type
+        """        response = dynamodb_client.put_item(
                     Item={
-                        'imagename': {
-                            'S': body["imagename"],
-                        }, 
                         'detection': {
-                            'S': json.dumps(label),
-                        }, 
+                            # originally I tried to store the dictionary as a dynamodb map 
+                            # but that seemed more complex and/or time consuming than desired 
+                            # https://stackoverflow.com/questions/57494372/storing-list-of-dict-in-a-dynamodb-table#:~:text=I%20recommend%20you%20JSON%20encode%20you%20list%20and%20just%20store%20it%20in%20DynamoDB%20as%20a%20string%20value.
+                            # but turns out this json string is too large 
+                            # PutItem operation: One or more parameter values were invalid: Size of hashkey has exceeded the maximum size limit of2048 bytes
+                            'S': json.dumps(body)
+                        }
+                        # addmitedly could also add time.now as a timestamp 
                     },
-                    TableName='detections'
-                ) 
-            for textdetection in body["text"]:
-                # save label 
-                dynamodb_client.put_item(
-                    Item={
-                        'imagename': {
-                            'S': body["imagename"],
-                        }, 
-                        'detection': {
-                            'S': json.dumps(textdetection),
-                        }, 
-                    },
-                    TableName='detections'
-                ) 
-            # delete message from queue 
-            print("\nReceiptHandle\n")
-            print(message["ReceiptHandle"])
-            sqs_client.delete_message(
-                QueueUrl="http://127.0.0.1:5000/123456789012/rekognition-queue",
-                ReceiptHandle=message["ReceiptHandle"]
-            )
-        except:
-            # so here you'd likely have another SQS queue act as a dead letter queue 
-            pass
+                    TableName='detections',
+                )
+                print(response)
+        """
+    """database = boto3.resource('dynamodb', endpoint_url="http://127.0.0.1:5000")
+        table = database.Table("detections")
+        table.put_item(Item = {
+            "detection": { "S": "test" }
+        })"""
+
+    """    dynamodb = boto3.resource('dynamodb', endpoint_url="http://127.0.0.1:5000")
+        table = dynamodb.Table("detections")
+        item_json = {
+            "detection": "John Doe"
+        }#.encode('utf-8')
+        response = table.put_item(Item=item_json)
+    print(response)
+    """    
+    print(type(body["labels"]), type(body["text"]), type(json.dumps(body["text"])))
+    response = dynamodb_client.put_item(
+            Item={
+                'labels': {
+                    # originally I tried to store the dictionary as a dynamodb map 
+                    # but that seemed more complex and/or time consuming than desired 
+                    # https://stackoverflow.com/questions/57494372/storing-list-of-dict-in-a-dynamodb-table#:~:text=I%20recommend%20you%20JSON%20encode%20you%20list%20and%20just%20store%20it%20in%20DynamoDB%20as%20a%20string%20value.
+                    # but turns out this json string is too large 
+                    # PutItem operation: One or more parameter values were invalid: Size of hashkey has exceeded the maximum size limit of2048 bytes
+                    #'L': json.dumps(body["labels"])
+                    #'L': body["labels"]
+                    'S': json.dumps(body["labels"])
+                },
+                'text': {
+                    # originally I tried to store the dictionary as a dynamodb map 
+                    # but that seemed more complex and/or time consuming than desired 
+                    # https://stackoverflow.com/questions/57494372/storing-list-of-dict-in-a-dynamodb-table#:~:text=I%20recommend%20you%20JSON%20encode%20you%20list%20and%20just%20store%20it%20in%20DynamoDB%20as%20a%20string%20value.
+                    # but turns out this json string is too large 
+                    # PutItem operation: One or more parameter values were invalid: Size of hashkey has exceeded the maximum size limit of2048 bytes
+                    #'L': json.dumps(body["text"])
+                    #'L': body["text"]
+                    'S': json.dumps(body["text"])
+                },
+                # addmitedly could also add time.now as a timestamp 
+            },
+            TableName='detections',
+        )
+    print(response)
+    
+    # delete message from queue 
+    try: 
+        pass
+    except:
+        # so here you'd likely have another SQS queue act as a dead letter queue 
+        pass
     # insert into dynamodb (dont bother about batch updates?) ~ though I suppose if there was time I should've
 
 def dict_to_item(raw):

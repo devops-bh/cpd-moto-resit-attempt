@@ -72,9 +72,9 @@ def lambda_handler(event, context):
 
     detect_text_response = rekognition_client.detect_text(Image={
         'S3Object': {
-            'Bucket': message["bucket_name"], #'Bucket': "bucketname",
+            'Bucket': message["bucket"], #'Bucket': "bucketname",
             # just gonna merge the image path, filename & extension into 1 since its convenient 
-            'Image': message["image_path"], #'Name': 'image.jpg',
+            'Name': message["image"], #'Name': 'image.jpg',
         }
     })
     print("\ndetect_text_response\n")
@@ -83,15 +83,16 @@ def lambda_handler(event, context):
     detect_labels_response = rekognition_client.detect_labels(
         Image={
             'S3Object': {
-                'Bucket': message["bucket_name"], #'Bucket': "bucketname",
+                'Bucket': message["bucket"], #'Bucket': "bucketname",
                 # just gonna merge the image path, filename & extension into 1 since its convenient 
-                'Image': message["image_path"], #'Name': 'image.jpg',
+                'Name': message["image"], #'Name': 'image.jpg',
             },
         },
     )
     print(detect_labels_response)
     # send to SQS queue 
     send_message_to_sqs_queue_response = sqs_client.send_message(QueueUrl="http://127.0.0.1:5000/123456789012/rekognition-queue", MessageBody=json.dumps({
+        "imagename": message["image"],
         "labels": detect_labels_response["Labels"],
         # Not sure if it matters yet, but I'd assume that you'd want the parent for each instance, oh well 
         "text": detect_text_response["TextDetections"]
