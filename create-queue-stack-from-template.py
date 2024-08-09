@@ -7,7 +7,7 @@ import os
 
 # For the Queue 
 # Specify the location of your CloudFormation template file
-template_file_location = 'queue-template.yaml'
+template_file_location = 'stack-template.yaml'
 
 # Specify the name of the stack you want to create
 stack_name = 'cloud_formation_face_analysis_queue_stack'

@@ -9,4 +9,7 @@ This shell script will be executed either via at launch the EC2 UserData paramet
 Or via the SSM.send_command functionality 
 """
 
+# originally I thought this would be an env variable, but sadly it'll need to be hardcoded 
+# otherwise I'd need to also send the env variable to the EC2 instance somehow 
 SERVER_URL = # this'll be an .env variable which contains the Ngrok URL 
+

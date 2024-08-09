@@ -5,7 +5,9 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: ImageName
+        - AttributeName: imagename
+          AttributeType: S
+        - AttributeName: detection 
           AttributeType: S
       BillingMode: PROVISIONED
       ProvisionedThroughput:
@@ -14,5 +16,7 @@ Resources:
       KeySchema:
         - AttributeName: ImageName
           KeyType: HASH
+        - AttributeName: detection 
+          KeyType: RANGE
       StreamSpecification:
         StreamViewType: KEYS_ONLY
